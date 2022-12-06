@@ -1,0 +1,28 @@
+spring:
+  datasource:
+    platform: postgres
+    url: jdbc:postgresql://localhost:5433/yugabyte
+    username: yugabyte
+    password: yugabyte
+    driverClassName: org.postgresql.Driver
+
+  batch:
+    data:
+      source:
+        init: true
+    job:
+      enabled: false
+    initializer:
+      enabled: enable
+    initialize-schema: always
+    tablePrefix: BATCH_
+
+  jpa:
+   hibernate:
+    naming.physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+    implicit-strategy: org.hibernate.boot.model.naming.ImplicitNamingStrategyLegacyJpaImpl
+    ddl-auto:
+     value: auto
+    show-sql: true
+    hibernate:
+     format_sql: true
