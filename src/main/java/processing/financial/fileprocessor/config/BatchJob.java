@@ -180,26 +180,4 @@ public class BatchJob {
                 .tasklet(new FileSplitterTasklet())
                 .build();
     }
-
-//    @Bean
-//    public Step step1(ItemReader<Transaction> flatItemReader,
-//                      TransactionItemProcessor processor,
-//                      ItemWriter<TransactionEnriched> batchJdbcItemWriter) {
-//        return stepBuilderFactory.get("step1")
-//                .<Transaction, TransactionEnriched> chunk(5000)
-//                .reader(flatItemReader)
-//                .processor(processor)
-//                .writer(batchJdbcItemWriter)
-//                .build();
-//      }
-
-//    @Bean(name = "transformFileItems")
-//    public Job transformFileItems(Step partitionStep, Step splitFile) {
-//        return jobBuilderFactory.get("transformFileItems")
-//                .start(splitFile)
-//                .next(partitionStep)
-//                .build();
-//      }
-
-
 }
