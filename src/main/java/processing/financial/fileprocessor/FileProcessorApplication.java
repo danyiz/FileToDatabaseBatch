@@ -40,7 +40,7 @@ public class FileProcessorApplication implements CommandLineRunner {
 	@Override
 	public void run(String... args) throws Exception {
 		JobParametersBuilder paramsBuilder = new JobParametersBuilder();
-		paramsBuilder.addString("file.input", input);
+		paramsBuilder.addString("inputFile", input);
 		jobLauncher.run(transformFileItems, paramsBuilder.toJobParameters());
 	}
 }

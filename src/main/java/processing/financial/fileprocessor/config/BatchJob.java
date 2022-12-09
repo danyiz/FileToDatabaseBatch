@@ -32,8 +32,8 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import processing.financial.fileprocessor.batch.CustomPartitioner;
 import processing.financial.fileprocessor.batch.FileSplitterTasklet;
 import processing.financial.fileprocessor.batch.TransactionItemProcessor;
-import processing.financial.fileprocessor.domain.Transaction;
-import processing.financial.fileprocessor.domain.TransactionEnriched;
+import processing.financial.fileprocessor.domain.*;
+
 import javax.sql.DataSource;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -43,8 +43,7 @@ import java.net.MalformedURLException;
 @Slf4j
 public class BatchJob {
 
-    @Autowired
-    ResourcePatternResolver resoursePatternResolver;
+
 
     @Autowired
     private DataSource dataSource;
@@ -61,6 +60,9 @@ public class BatchJob {
     @Autowired
     StepBuilderFactory stepBuilderFactory;
 
+    @Autowired
+    CustomPartitioner partitioner;
+
 
     @Bean
     public JobBuilder jobBuilder(){
@@ -76,15 +78,14 @@ public class BatchJob {
     @Bean(name = "transformFileItems")
     public Job transformFileItems(Step partitionStep, Step splitFile)  throws UnexpectedInputException,  ParseException {
         return jobBuilderFactory.get("partitionerJob")
-                .start(splitFile)
-                .next(partitionStep)
+                .start(partitionStep)
                 .build();
     }
 
     @Bean
-    public Step partitionStep(FlatFileItemReader flatFileItemReader, TransactionItemProcessor transactionItemProcessor,ItemWriter<TransactionEnriched> batchJdbcItemWriter) throws UnexpectedInputException, MalformedURLException, ParseException {
+    public Step partitionStep(FlatFileItemReader flatFileItemReader, TransactionItemProcessor transactionItemProcessor,ItemWriter<TransactionEnriched> batchJdbcItemWriter) throws UnexpectedInputException, ParseException, CreateDirsFailException, IOException, LineLengthException {
         return stepBuilderFactory.get("partitionStep")
-                .partitioner("slaveStep", partitioner())
+                .partitioner("slaveStep", partitioner)
                 .step(slaveStep(flatFileItemReader,transactionItemProcessor,batchJdbcItemWriter))
                 .taskExecutor(taskExecutor())
                 .build();
@@ -133,18 +134,6 @@ public class BatchJob {
         return tokenizer;
     }
 
-    @Bean
-    public CustomPartitioner partitioner() {
-        CustomPartitioner partitioner = new CustomPartitioner();
-        Resource[] resources;
-        try {
-            resources = resoursePatternResolver.getResources("file:input/input_split/*.file");
-        } catch (IOException e) {
-            throw new RuntimeException("I/O problems when resolving the input file pattern.",  e);
-        }
-        partitioner.setResources(resources);
-        return partitioner;
-    }
 
     @Bean
     public TaskExecutor taskExecutor() {
@@ -174,10 +163,5 @@ public class BatchJob {
 
         return databaseItemWriter;
     }
-    @Bean
-    public Step splitFile() {
-        return stepBuilderFactory.get("splitFile")
-                .tasklet(new FileSplitterTasklet())
-                .build();
-    }
+
 }

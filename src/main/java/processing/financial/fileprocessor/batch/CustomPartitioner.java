@@ -17,16 +17,29 @@
  */
 package processing.financial.fileprocessor.batch;
 
+
+import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.core.partition.support.Partitioner;
 import org.springframework.batch.item.ExecutionContext;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
 import org.springframework.core.io.Resource;
+import org.springframework.core.io.support.ResourcePatternResolver;
+import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
-
+import processing.financial.fileprocessor.domain.CreateDirsFailException;
+import processing.financial.fileprocessor.domain.FileSplitter;
+import processing.financial.fileprocessor.domain.LineLengthException;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+@Component
 public class CustomPartitioner  implements Partitioner {
+
+    @Autowired
+    ResourcePatternResolver resourcePatternResolver;
 
     private static final String DEFAULT_KEY_NAME = "fileName";
 
@@ -35,6 +48,22 @@ public class CustomPartitioner  implements Partitioner {
     private Resource[] resources = new Resource[0];
 
     private String keyName = DEFAULT_KEY_NAME;
+
+    @Bean
+    @StepScope
+    public CustomPartitioner partitioner(@Value("#{jobParameters[inputFile]}")String input) throws CreateDirsFailException, IOException, LineLengthException {
+
+        FileSplitter.splitTextFiles(input, 500,41);
+        Resource[] resources;
+        try {
+            resources = resourcePatternResolver.getResources("file:input/input_split/*.file");
+        } catch (IOException e) {
+            throw new RuntimeException("I/O problems when resolving the input file pattern.",  e);
+        }
+        this.setResources(resources);
+        return this;
+    }
+
 
     /**
      * The resources to assign to each partition. In Spring configuration you

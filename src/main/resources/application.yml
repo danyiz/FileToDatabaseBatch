@@ -5,6 +5,8 @@ spring:
     username: yugabyte
     password: yugabyte
     driverClassName: org.postgresql.Driver
+  liquibase:
+    change-log: classpath:db/changelog/db.changelog.xml
 
   batch:
     data:
