@@ -1,5 +1,8 @@
 package processing.financial.fileprocessor.domain;
 
+import processing.financial.fileprocessor.domain.exception.CreateDirsFailException;
+import processing.financial.fileprocessor.domain.exception.LineLengthException;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;

@@ -23,16 +23,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
-import org.springframework.core.io.support.ResourcePatternResolver;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import processing.financial.fileprocessor.batch.CustomPartitioner;
-import processing.financial.fileprocessor.batch.FileSplitterTasklet;
 import processing.financial.fileprocessor.batch.TransactionItemProcessor;
 import processing.financial.fileprocessor.domain.*;
+import processing.financial.fileprocessor.domain.exception.CreateDirsFailException;
+import processing.financial.fileprocessor.domain.exception.LineLengthException;
 
 import javax.sql.DataSource;
 import java.io.IOException;
@@ -76,7 +75,7 @@ public class BatchJob {
 
 
     @Bean(name = "transformFileItems")
-    public Job transformFileItems(Step partitionStep, Step splitFile)  throws UnexpectedInputException,  ParseException {
+    public Job transformFileItems(Step partitionStep)  throws UnexpectedInputException,  ParseException {
         return jobBuilderFactory.get("partitionerJob")
                 .start(partitionStep)
                 .build();
@@ -94,7 +93,7 @@ public class BatchJob {
     @Bean
     public Step slaveStep(FlatFileItemReader flatFileItemReader, TransactionItemProcessor transactionItemProcessor,ItemWriter<TransactionEnriched> batchJdbcItemWriter) throws UnexpectedInputException, ParseException {
         return stepBuilderFactory.get("slaveStep")
-                .<Transaction, TransactionEnriched>chunk(5000)
+                .<Transaction, TransactionEnriched>chunk(500)
                 .reader(flatFileItemReader)
                 .processor(transactionItemProcessor)
                 .writer(batchJdbcItemWriter)
@@ -138,9 +137,9 @@ public class BatchJob {
     @Bean
     public TaskExecutor taskExecutor() {
         ThreadPoolTaskExecutor taskExecutor = new ThreadPoolTaskExecutor();
-        taskExecutor.setMaxPoolSize(20);
-        taskExecutor.setCorePoolSize(20);
-        taskExecutor.setQueueCapacity(20);
+        taskExecutor.setMaxPoolSize(60);
+        taskExecutor.setCorePoolSize(60);
+        taskExecutor.setQueueCapacity(60);
         taskExecutor.afterPropertiesSet();
         return taskExecutor;
     }

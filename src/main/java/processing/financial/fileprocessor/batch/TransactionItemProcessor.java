@@ -27,7 +27,7 @@ public class TransactionItemProcessor implements ItemProcessor<Transaction, Tran
     {
         UUID id = UUID.randomUUID();
         String payload =  objectMapper.writeValueAsString(trasaction);
-        log.info("File item: {}",payload);
+        //log.info("File item: {}",payload);
         return new TransactionEnriched(id,fileName,trasaction.getAccountNumber(),"LOADED",payload);
     }
 

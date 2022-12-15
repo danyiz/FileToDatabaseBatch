@@ -28,9 +28,9 @@ import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.ResourcePatternResolver;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
-import processing.financial.fileprocessor.domain.CreateDirsFailException;
+import processing.financial.fileprocessor.domain.exception.CreateDirsFailException;
 import processing.financial.fileprocessor.domain.FileSplitter;
-import processing.financial.fileprocessor.domain.LineLengthException;
+import processing.financial.fileprocessor.domain.exception.LineLengthException;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -53,7 +53,8 @@ public class CustomPartitioner  implements Partitioner {
     @StepScope
     public CustomPartitioner partitioner(@Value("#{jobParameters[inputFile]}")String input) throws CreateDirsFailException, IOException, LineLengthException {
 
-        FileSplitter.splitTextFiles(input, 500,41);
+        var fileList = FileSplitter.splitTextFiles(input, 30000,41);
+
         Resource[] resources;
         try {
             resources = resourcePatternResolver.getResources("file:input/input_split/*.file");
